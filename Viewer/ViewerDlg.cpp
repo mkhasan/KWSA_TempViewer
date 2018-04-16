@@ -119,6 +119,7 @@ BOOL CViewerDlg::OnInitDialog()
 	GetDlgItem(IDC_ID)->SetWindowTextW(_T("1234"));
 	GetDlgItem(IDC_COM)->SetWindowTextW(port);
 	SetTimer(1, 1000, NULL);
+	//OnBnClickedBtnShow();
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -225,6 +226,9 @@ void CViewerDlg::OnTimer(UINT_PTR nIDEvent)
 		}
 		else {
 			// the thread handle is not signaled - the thread is still alive
+			CString str;
+			str.Format(_T("Temperature is %.2f"), (float) value*0.0382+3.6165);
+			GetDlgItem(IDC_MSG)->SetWindowTextW(str);
 		}
 	}
 	CDialogEx::OnTimer(nIDEvent);

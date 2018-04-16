@@ -128,7 +128,14 @@ DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam)
 	int i;
 
 	dNoOFBytestoWrite = sizeof(lpBuffer); // Calculating the no of bytes to write into the port
-	char buffer[100];
+	char buffer[256];
+	buffer[0] = 0x02;
+	for (int i = 0; i<dNoOFBytestoWrite - 1; i++)
+		buffer[i + 1] = lpBuffer[i];
+	buffer[dNoOFBytestoWrite] = 0x03;
+
+	dNoOFBytestoWrite = sizeof(lpBuffer); // Calculating the no of bytes to write into the port
+	
 	buffer[0] = 0x02;
 	for (int i = 0; i<dNoOFBytestoWrite - 1; i++)
 		buffer[i + 1] = lpBuffer[i];
@@ -137,18 +144,7 @@ DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam)
 
 
 	while (quit == false) {
-		Status = WriteFile(hComm,               // Handle to the Serialport
-			lpBuffer,            // Data to be written to the port 
-			dNoOFBytestoWrite,   // No of bytes to write into the port
-			&dNoOfBytesWritten,  // No of bytes written to the port
-			NULL);
-
-		if (Status == TRUE)
-			printf("\n\n    %s - Written to %s", lpBuffer, ComPortName);
-		else
-			printf("\n\n   Error %d in Writing to Serial Port", GetLastError());
-
-
+		
 
 		Status = WriteFile(hComm,               // Handle to the Serialport
 			buffer,            // Data to be written to the port 
@@ -161,6 +157,12 @@ DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam)
 		else
 			return WRITE_ERROR;
 
+		Status = SetCommMask(hComm, EV_RXCHAR); //Configure Windows to Monitor the serial device for Character Reception
+
+		if (Status == FALSE)
+			printf("\n\n    Error! in Setting CommMask");
+		else
+			printf("\n\n    Setting CommMask successfull");
 
 
 		Status = WaitCommEvent(hComm, &dwEventMask, NULL); //Wait for the character to be received
@@ -198,7 +200,10 @@ DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam)
 			}
 			str[k] = 0;
 
+			if (k > 4)
+				str[4] = 0;
 			value = atoi(str);
+			Sleep(500);
 			
 		}
 
