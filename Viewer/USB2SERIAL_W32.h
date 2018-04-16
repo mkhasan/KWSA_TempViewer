@@ -1,0 +1,16 @@
+#pragma once
+
+#ifndef USBSERIAL_W32_H_
+#define USBSERIAL_W32_H_
+
+
+#define INVALID_HANDLE 1
+#define ERROR_WRONG_SETTING 2
+#define WRITE_ERROR 3
+#define WAIT_EVENT_ERROR 4
+
+
+DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam);
+
+
+#endif
