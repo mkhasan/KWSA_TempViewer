@@ -79,6 +79,7 @@ BEGIN_MESSAGE_MAP(CViewerDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_SHOW, &CViewerDlg::OnBnClickedBtnShow)
 	ON_WM_TIMER()
+	ON_STN_CLICKED(IDC_STATIC_TEMP, &CViewerDlg::OnStnClickedStaticTemp)
 END_MESSAGE_MAP()
 
 
@@ -115,10 +116,22 @@ BOOL CViewerDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-	GetDlgItem(IDC_MSG)->SetWindowTextW(_T(""));
+	CFont *m_Font1 = new CFont;
+	m_Font1->CreatePointFont(300, _T("Arial Bold"));
+	CStatic * m_Label = (CStatic *)GetDlgItem(IDC_MSG);
+	m_Label->SetFont(m_Font1);
+
+	m_Label->SetWindowTextW(_T(""));
+
+	CFont *m_Font2 = new CFont;
+	m_Font2->CreatePointFont(200, _T("Arial Bold"));
+
+	GetDlgItem(IDC_STATIC_TEMP)->SetFont(m_Font2);
+	GetDlgItem(IDC_STATIC_TEMP)->SetWindowTextW(_T(""));
+
 	GetDlgItem(IDC_ID)->SetWindowTextW(_T("1234"));
 	GetDlgItem(IDC_COM)->SetWindowTextW(port);
-	SetTimer(1, 1000, NULL);
+	
 	//OnBnClickedBtnShow();
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -204,6 +217,7 @@ void CViewerDlg::OnBnClickedBtnShow()
 		exit(0);
 	}
 
+	SetTimer(1, 1000, NULL);
 
 
 }
@@ -227,9 +241,16 @@ void CViewerDlg::OnTimer(UINT_PTR nIDEvent)
 		else {
 			// the thread handle is not signaled - the thread is still alive
 			CString str;
-			str.Format(_T("Temperature is %.2f"), (float) value*0.0382+3.6165);
+			GetDlgItem(IDC_STATIC_TEMP)->SetWindowTextW(_T("Temperature is"));
+			str.Format(_T("%.2f"), (float) value*0.0382+3.6165);
 			GetDlgItem(IDC_MSG)->SetWindowTextW(str);
 		}
 	}
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CViewerDlg::OnStnClickedStaticTemp()
+{
+	// TODO: Add your control notification handler code here
 }
