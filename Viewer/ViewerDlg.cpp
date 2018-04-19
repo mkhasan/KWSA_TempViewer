@@ -42,6 +42,7 @@ public:
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
+	virtual void OnCancel();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -63,7 +64,7 @@ END_MESSAGE_MAP()
 
 CViewerDlg::CViewerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_VIEWER_DIALOG, pParent)
-	, port(_T("COM4"))
+	, port(_T("COM7"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -132,7 +133,7 @@ BOOL CViewerDlg::OnInitDialog()
 	GetDlgItem(IDC_ID)->SetWindowTextW(_T("1234"));
 	GetDlgItem(IDC_COM)->SetWindowTextW(port);
 	
-	//OnBnClickedBtnShow();
+	OnBnClickedBtnShow();
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -223,27 +224,22 @@ void CViewerDlg::OnBnClickedBtnShow()
 }
 
 
+extern sensorRecord sensor;
 void CViewerDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
-
+	double val = -1.0;
+	CString str;
 	int i=0;
-	if (nIDEvent == 1 && hThread != NULL) {
+	if (nIDEvent == 1) {
 		// handle timer event
-		DWORD result = WaitForSingleObject(hThread, 0);
 
-		if (result == WAIT_OBJECT_0) {
-			// the thread handle is signaled - the thread has terminated
-			AfxMessageBox(_T("Error"));
-			exit(0);
-
-		}
-		else {
-			// the thread handle is not signaled - the thread is still alive
-			CString str;
-			GetDlgItem(IDC_STATIC_TEMP)->SetWindowTextW(_T("Temperature is"));
-			str.Format(_T("%.2f"), (float) value*0.0382+3.6165);
-			GetDlgItem(IDC_MSG)->SetWindowTextW(str);
+		if (sensor.ownPtr != NULL) {
+			if (SensorRread(sensor.ComNr, &val) == SENSOR_OK) {
+				str.Format(_T("%.2f"), val);
+				GetDlgItem(IDC_MSG)->SetWindowTextW(str);
+			}
+				
 		}
 	}
 	CDialogEx::OnTimer(nIDEvent);
@@ -253,4 +249,12 @@ void CViewerDlg::OnTimer(UINT_PTR nIDEvent)
 void CViewerDlg::OnStnClickedStaticTemp()
 {
 	// TODO: Add your control notification handler code here
+}
+
+
+void CAboutDlg::OnCancel()
+{
+	// TODO: Add your specialized code here and/or call the base class
+	quit = true;
+	CDialogEx::OnCancel();
 }
