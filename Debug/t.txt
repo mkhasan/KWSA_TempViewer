@@ -1,9 +1,1 @@
-value is 552 
-value is 552 
-value is 553 
-value is 551 
-value is 551 
-value is 552 
-value is 550 
-value is 554 
-value is 550 
+value is 579 

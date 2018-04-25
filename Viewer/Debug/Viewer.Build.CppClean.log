@@ -5,9 +5,10 @@ f:\kiswire\sensors\gui\viewer\viewer\debug\stdafx.obj
 f:\kiswire\sensors\gui\viewer\viewer\debug\usb2serial_w32.obj
 f:\kiswire\sensors\gui\viewer\viewer\debug\viewer.obj
 f:\kiswire\sensors\gui\viewer\viewer\debug\viewerdlg.obj
-f:\kiswire\sensors\gui\viewer\viewer\debug\viewer.res
-f:\kiswire\sensors\gui\viewer\debug\viewer.pdb
 f:\kiswire\sensors\gui\viewer\debug\viewer.ilk
+f:\kiswire\sensors\gui\viewer\debug\viewer.exe
+f:\kiswire\sensors\gui\viewer\debug\viewer.pdb
+f:\kiswire\sensors\gui\viewer\viewer\debug\viewer.res
 f:\kiswire\sensors\gui\viewer\viewer\debug\viewer.tlog\cl.command.1.tlog
 f:\kiswire\sensors\gui\viewer\viewer\debug\viewer.tlog\cl.read.1.tlog
 f:\kiswire\sensors\gui\viewer\viewer\debug\viewer.tlog\cl.write.1.tlog

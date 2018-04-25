@@ -20,9 +20,14 @@
 
 
 CString ComPortName;
+int sensorId = -1;
 
 bool quit = false;
 int value = -1;
+unsigned long value1 = 0;
+unsigned long maxMissing=0;
+unsigned long maxFrame = 0;
+
 
 // CAboutDlg dialog used for App About
 
@@ -130,10 +135,10 @@ BOOL CViewerDlg::OnInitDialog()
 	GetDlgItem(IDC_STATIC_TEMP)->SetFont(m_Font2);
 	GetDlgItem(IDC_STATIC_TEMP)->SetWindowTextW(_T(""));
 
-	GetDlgItem(IDC_ID)->SetWindowTextW(_T("1234"));
+	GetDlgItem(IDC_ID)->SetWindowTextW(_T("0007"));
 	GetDlgItem(IDC_COM)->SetWindowTextW(port);
 	
-	OnBnClickedBtnShow();
+	//OnBnClickedBtnShow();
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -191,8 +196,21 @@ HCURSOR CViewerDlg::OnQueryDragIcon()
 void CViewerDlg::OnBnClickedBtnShow()
 {
 	// TODO: Add your control notification handler code here
+
+	CString idStr;
+	GetDlgItem(IDC_ID)->GetWindowTextW(idStr);
+	sensorId = _ttoi(idStr);
+
+	if (!(sensorId > 0 && sensorId < 0xFF)) {
+		AfxMessageBox(_T("Error: Invalid sensor id"));
+		exit(0);
+	}
+
+	GetDlgItem(IDC_ID)->EnableWindow(false);
 	GetDlgItem(IDC_BTN_SHOW)->EnableWindow(false);
 	GetDlgItem(IDC_COM)->EnableWindow(false);
+
+	
 
 	hThread = NULL;
 	//static DWORD   dwThread;
@@ -230,15 +248,40 @@ void CViewerDlg::OnTimer(UINT_PTR nIDEvent)
 	// TODO: Add your message handler code here and/or call default
 	double val = -1.0;
 	CString str;
+	static int ret = 0;
+	int dir = 1;
 	int i=0;
 	if (nIDEvent == 1) {
 		// handle timer event
 
 		if (sensor.ownPtr != NULL) {
-			if (SensorRread(sensor.ComNr, &val) == SENSOR_OK) {
+		
+			dir = 1;
+			if (SensorRread(sensor.ComNr, &val) == SENSOR_TRUE) {
 				str.Format(_T("%.2f"), val);
 				GetDlgItem(IDC_MSG)->SetWindowTextW(str);
+
+
+				str.Format(_T("out count is %d"), sensor.out_count);
+				GetDlgItem(IDC_TEMP)->SetWindowTextW(str);
+
+				str.Format(_T("missing is %d"), maxMissing);
+				GetDlgItem(IDC_TEMP2)->SetWindowTextW(str);
+
+				//if (value1 > 0)
+					//value1 = 100;
+				str.Format(_T("in count is %ld"), value1);
+				GetDlgItem(IDC_TEMP3)->SetWindowTextW(str);
+				dir = -1;
+
+
 			}
+
+
+			ret += dir;
+			str.Format(_T("frame came %ld"), maxFrame);
+			GetDlgItem(IDC_TEMP3)->SetWindowTextW(str);
+
 				
 		}
 	}

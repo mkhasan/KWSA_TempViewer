@@ -20,7 +20,7 @@
 #define SENSOR_ERROR -1
 #define SENSOR_TRUE 1
 
-#define	SLEEP_IN_THREAD	10
+#define	SLEEP_IN_THREAD	1
 #define DATA_KEY 0xA5
 #define	DATA_POSTFIX_1	0x0D
 #define	DATA_POSTFIX_2	0x0A

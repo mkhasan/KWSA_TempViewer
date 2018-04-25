@@ -54,8 +54,12 @@
 #include <string.h>
 
 extern CString ComPortName;
+extern int sensorId;
 extern bool quit;
 extern int value;
+extern unsigned long value1;
+extern unsigned long maxMissing;
+extern unsigned long maxFrame;
 
 
 sensorRecord sensor;
@@ -93,12 +97,12 @@ DWORD WINAPI USB2SERIAL_W32_backup(LPVOID lpParam)
 	if (Status == FALSE)
 		printf("\n   Error! in GetCommState()");
 
-	dcbSerialParams.BaudRate = CBR_9600;      // Setting BaudRate = 9600
+	dcbSerialParams.BaudRate = 9600;      // Setting BaudRate = 9600
 	dcbSerialParams.ByteSize = 8;             // Setting ByteSize = 8
 	dcbSerialParams.StopBits = ONESTOPBIT;    // Setting StopBits = 1
 	dcbSerialParams.Parity = NOPARITY;      // Setting Parity = None 
-	dcbSerialParams.fDtrControl = DTR_CONTROL_DISABLE;
-	dcbSerialParams.fRtsControl = DTR_CONTROL_DISABLE;
+	dcbSerialParams.fDtrControl = DTR_CONTROL_ENABLE;
+	dcbSerialParams.fRtsControl = DTR_CONTROL_ENABLE;
 
 	dcbSerialParams.fOutxCtsFlow = true;
 	Status = SetCommState(hComm, &dcbSerialParams);  //Configuring the port according to settings in DCB 
@@ -236,8 +240,8 @@ DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam) {
 
 	SensorActivate(comNo, 9600, 256, 0);
 	while (quit == false) {
-		SensorGetValue(7);
-		Sleep(500);
+		SensorGetValue(comNo);
+		Sleep(1000);
 	}
 
 	Release();
@@ -263,11 +267,18 @@ unsigned __stdcall data_pump(void *ptr) //war static void
 		/* Lesen */
 			res = ReadFile(tmp->hcom, tmp->in_buffer + tmp->in_pos,
 				tmp->in_missing, &tmp->in_count, NULL); //&tmp->action_read);
+
+			value1 += tmp->in_count;
+			if(maxMissing < tmp->in_missing)
+				maxMissing = tmp->in_missing;
 		if (res)
 		{
 
 			if (!tmp->in_count)	//wenn nix gelesen:
-				Sleep(SLEEP_IN_THREAD);	//Suspend the execution of the current thread
+				Sleep(10);	//Suspend the execution of the current thread
+			else
+				tmp->in_count = tmp->in_count;
+
 
 		}
 		else
@@ -389,6 +400,7 @@ static void move_data(sensorRecord *tmp)
 
 					*(tmp->out_buffer + tmp->out_put) = t.value;
 					tmp->out_put = (tmp->out_put + 1) % tmp->out_size;
+					maxFrame++;
 				}
 				/* geschützten Daten-Lese-Bereich verlassen */
 				ReleaseMutex(tmp->io_mutex);
@@ -956,12 +968,21 @@ int CALLTYPE SensorGetValue(int ComNo)
 	int res = SENSOR_OK;
 
 	CHECK_COMNO;
+	memset(txbuf, 0, sizeof(txbuf));
 	
-	sprintf(txbuf, "%cGET VALUE 1234%c", STX, ETX);
+	sprintf(txbuf, "%cGET VALUE %03d%c", STX, sensorId, ETX);
 
 
 
-	WRITE_BYTES_CHK_SUCC(16);
+	//WRITE_BYTES_CHK_SUCC(16);
+
+	
+	int len = strlen(txbuf);
+	if (!WriteFile(sensor.hcom, txbuf, (len), &Byteswritten, NULL)) 
+	{	
+		sensor.LastError = GetLastError() | OWN_ERR_MASK; 
+		res = SENSOR_ERROR; 
+	}	
 
 	return res;
 }
@@ -970,6 +991,8 @@ int CALLTYPE SensorGetValue(int ComNo)
 double CalcData(const unsigned long val) {
 
 	printf("value is %ld \n", val);
-	return 0.0;
+	double ret =  ((double)val*0.0382 + 3.6165);
+
+	return ret;
 }
 
