@@ -135,6 +135,13 @@
 	}
 
 
+typedef struct _sensordata
+{
+	volatile unsigned int id;
+	volatile unsigned long value1;
+	volatile unsigned long value2;
+	volatile unsigned char status; //[4];   /* Status*/
+} sensordata;
 
 typedef struct _sensorRecord	//fuer je 1 GSV-4 mit CHAN_NO=4 Kanaelen
 {
@@ -158,7 +165,7 @@ typedef struct _sensorRecord	//fuer je 1 GSV-4 mit CHAN_NO=4 Kanaelen
 	HANDLE Prd_event;	//Signal: Alle (Lese-) Parameter fertig empfangen
 	HANDLE Clr_event;	//Signal: in_buffer geloescht
 						//gsvdata LastValue[CHAN_NO];
-	unsigned long *out_buffer;   /* Lesepuffer (Zeiger) */
+	sensordata *out_buffer;   /* Lesepuffer (Zeiger) */
 	unsigned long out_size;
 	volatile unsigned long out_put;   /* Datenpuffer Einfügeposition */
 	volatile unsigned long out_get;   /* Datenpuffer Entnahmeposition */
@@ -177,11 +184,7 @@ typedef struct _sensorRecord	//fuer je 1 GSV-4 mit CHAN_NO=4 Kanaelen
 static void move_data(sensorRecord *tmp);
 
 
-typedef struct _sensordata
-{
-	volatile unsigned long value;
-	volatile unsigned char status; //[4];   /* Status*/
-} sensordata;
+
 
 
 
@@ -192,7 +195,7 @@ int CALLTYPE SensorGetMode(int ComNo);
 int CALLTYPE SensorGetTxMode(int ComNo);
 double CalcData(const unsigned long val);
 int CALLTYPE SensorGetValue(int ComNo);
-int CALLTYPE SensorRread(int ComNo, double* out);
+int CALLTYPE SensorRead(int ComNo, unsigned int * id, double* val1, double* val2);
 int CALLTYPE SensorActivate(int ComNo, long Bitrate, long BufSize, long flags);
 void Release();
 

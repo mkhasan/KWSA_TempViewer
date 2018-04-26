@@ -69,7 +69,7 @@ END_MESSAGE_MAP()
 
 CViewerDlg::CViewerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_VIEWER_DIALOG, pParent)
-	, port(_T("COM7"))
+	, port(_T("COM4"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -86,6 +86,10 @@ BEGIN_MESSAGE_MAP(CViewerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_SHOW, &CViewerDlg::OnBnClickedBtnShow)
 	ON_WM_TIMER()
 	ON_STN_CLICKED(IDC_STATIC_TEMP, &CViewerDlg::OnStnClickedStaticTemp)
+	ON_STN_CLICKED(IDC_TEMP3, &CViewerDlg::OnStnClickedTemp3)
+	ON_STN_CLICKED(IDC_MSG, &CViewerDlg::OnStnClickedMsg)
+	ON_STN_CLICKED(IDC_TEMP, &CViewerDlg::OnStnClickedTemp)
+	ON_STN_CLICKED(IDC_TEMP2, &CViewerDlg::OnStnClickedTemp2)
 END_MESSAGE_MAP()
 
 
@@ -236,6 +240,8 @@ void CViewerDlg::OnBnClickedBtnShow()
 		exit(0);
 	}
 
+	//GetDlgItem(IDC_TEMP3)->ShowWindow(SW_HIDE);
+
 	SetTimer(1, 1000, NULL);
 
 
@@ -246,23 +252,25 @@ extern sensorRecord sensor;
 void CViewerDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
-	double val = -1.0;
+	double val1 = -1.0;
+	double val2 = -1.0;
 	CString str;
 	static int ret = 0;
 	int dir = 1;
 	int i=0;
+	unsigned int id;
 	if (nIDEvent == 1) {
 		// handle timer event
 
 		if (sensor.ownPtr != NULL) {
 		
 			dir = 1;
-			if (SensorRread(sensor.ComNr, &val) == SENSOR_TRUE) {
-				str.Format(_T("%.2f"), val);
+			if (SensorRead(sensor.ComNr, &id, &val1, &val2) == SENSOR_TRUE) {
+				str.Format(_T("%.2f   %.2f"), val1, val2);
 				GetDlgItem(IDC_MSG)->SetWindowTextW(str);
 
 
-				str.Format(_T("out count is %d"), sensor.out_count);
+				str.Format(_T("id is is %d"), id);
 				GetDlgItem(IDC_TEMP)->SetWindowTextW(str);
 
 				str.Format(_T("missing is %d"), maxMissing);
@@ -300,4 +308,28 @@ void CAboutDlg::OnCancel()
 	// TODO: Add your specialized code here and/or call the base class
 	quit = true;
 	CDialogEx::OnCancel();
+}
+
+
+void CViewerDlg::OnStnClickedTemp3()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CViewerDlg::OnStnClickedMsg()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CViewerDlg::OnStnClickedTemp()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CViewerDlg::OnStnClickedTemp2()
+{
+	// TODO: Add your control notification handler code here
 }

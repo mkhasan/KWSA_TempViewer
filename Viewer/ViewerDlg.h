@@ -38,4 +38,8 @@ public:
 	afx_msg void OnBnClickedBtnShow();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnStnClickedStaticTemp();
+	afx_msg void OnStnClickedTemp3();
+	afx_msg void OnStnClickedMsg();
+	afx_msg void OnStnClickedTemp();
+	afx_msg void OnStnClickedTemp2();
 };

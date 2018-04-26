@@ -238,7 +238,7 @@ DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam) {
 	CString str = ComPortName.Mid(strlen("COM"), strlen("COM") + 1);
 	int comNo = _ttoi(str);
 
-	SensorActivate(comNo, 9600, 256, 0);
+	SensorActivate(comNo, 115200, 256, 0);
 	while (quit == false) {
 		SensorGetValue(comNo);
 		Sleep(1000);
@@ -371,17 +371,22 @@ static void move_data(sensorRecord *tmp)
 
 			p++;
 
-			memset((void *)&t.value, 0, sizeof(t.value));
+			memcpy((void *)&t.id, p, sizeof(unsigned int));
+			p += sizeof(unsigned int);
+			memset((void *)&t.value1, 0, sizeof(t.value1));
 
-			int k = sizeof(t.value);
-			*((unsigned char *)&t.value + 3) = 0;
-			*((unsigned char *)&t.value + 2) = 0;
-			*((unsigned char *)&t.value + 1) = (p[0]);
-			*((unsigned char *)&t.value + 0) = (p[1]);
+			int k = sizeof(t.value1);
+			*((unsigned char *)&t.value1 + 3) = 0;
+			*((unsigned char *)&t.value1 + 2) = 0;
+			*((unsigned char *)&t.value1 + 1) = (p[0]);
+			*((unsigned char *)&t.value1 + 0) = (p[1]);
 
-			p += 8;
+			p += 2;
 
-
+			*((unsigned char *)&t.value2 + 3) = 0;
+			*((unsigned char *)&t.value2 + 2) = 0;
+			*((unsigned char *)&t.value2 + 1) = (p[0]);
+			*((unsigned char *)&t.value2 + 0) = (p[1]);
 
 			/* geschützten Daten-Lese-Bereich betreten */
 			DWORD retv = WaitForSingleObject(tmp->io_mutex, MUTEX_MAX_WAITTIME);	//INFINITE
@@ -398,7 +403,8 @@ static void move_data(sensorRecord *tmp)
 					else				//Buffer voll: alte Werte ueberschreiben
 						tmp->out_get = (tmp->out_get + 1) % tmp->out_size;
 
-					*(tmp->out_buffer + tmp->out_put) = t.value;
+					*(tmp->out_buffer+tmp->out_put)= t;
+					//tmp->out_buffer[tmp->out_put].value1 = t.value1;
 					tmp->out_put = (tmp->out_put + 1) % tmp->out_size;
 					maxFrame++;
 				}
@@ -649,7 +655,7 @@ int CALLTYPE SensorActivate(int ComNo, long Bitrate, long BufSize, long flags)
 	//tmpGSV->in_missing = 0;
 	tmpGSV->out_size = bufsizetmp; // * sizeof(long);
 
-	tmpGSV->out_buffer = (unsigned long*)malloc(tmpGSV->out_size * sizeof(long));
+	tmpGSV->out_buffer = (sensordata*)malloc(tmpGSV->out_size * sizeof(sensordata));
 
 	if (!tmpGSV->out_buffer)
 	{
@@ -927,13 +933,14 @@ int CALLTYPE SensorGetTxMode(int ComNo) {
 }
 
 
-int CALLTYPE SensorRread(int ComNo, double* out)
+int CALLTYPE SensorRead(int ComNo, unsigned int *id, double* out1, double* out2)
 {
 	int result = SENSOR_TRUE, ix; //,err;
 
 	CHECK_COMNO;
 	
 	sensorRecord *tmp = (sensorRecord *)sensor.ownPtr; //(gsvrecord *) redundant?
+	
 	
 
 	if (WaitForSingleObject(tmp->io_mutex, MUTEX_MAX_WAITTIME) == WAIT_OBJECT_0) //if(EnterGSVreadMutex(ComNo))
@@ -943,10 +950,12 @@ int CALLTYPE SensorRread(int ComNo, double* out)
 			result = SENSOR_OK;			//nein: result=0
 		if (result && !tmp->error)
 		{
-			*out = CalcData(*(tmp->out_buffer + tmp->out_get));
+			*id = tmp->out_buffer[tmp->out_get].id;
+			*out1 = CalcData(tmp->out_buffer[tmp->out_get].value1);
+			*out2 = CalcData(tmp->out_buffer[tmp->out_get].value2);
 			tmp->out_get = (tmp->out_get + 1) % tmp->out_size;
 			tmp->out_count--;
-
+			TRACE("%d \n", tmp->out_count);
 		}
 		ReleaseMutex(tmp->io_mutex);
 	}

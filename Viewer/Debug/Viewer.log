@@ -1,18 +1,18 @@
 ﻿  USB2SERIAL_W32.cpp
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(148): warning C4018: '<': signed/unsigned mismatch
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(155): warning C4018: '<': signed/unsigned mismatch
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(173): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 2 has type 'CString'
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(354): warning C4101: 'inx': unreferenced local variable
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(355): warning C4101: 'suffix': unreferenced local variable
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(440): warning C4101: 'i': unreferenced local variable
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(647): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(657): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(673): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(687): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(693): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(719): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(725): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(738): warning C4551: function call missing argument list
-f:\kiswire\sensors\gui\viewer\viewer\usb2serial_w32.cpp(932): warning C4101: 'ix': unreferenced local variable
-  Viewer.vcxproj -> F:\KisWire\sensors\GUI\Viewer\Debug\Viewer.exe
-  Viewer.vcxproj -> F:\KisWire\sensors\GUI\Viewer\Debug\Viewer.pdb (Partial PDB)
+f:\viewer\viewer\usb2serial_w32.cpp(148): warning C4018: '<': signed/unsigned mismatch
+f:\viewer\viewer\usb2serial_w32.cpp(155): warning C4018: '<': signed/unsigned mismatch
+f:\viewer\viewer\usb2serial_w32.cpp(173): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 2 has type 'CString'
+f:\viewer\viewer\usb2serial_w32.cpp(354): warning C4101: 'inx': unreferenced local variable
+f:\viewer\viewer\usb2serial_w32.cpp(355): warning C4101: 'suffix': unreferenced local variable
+f:\viewer\viewer\usb2serial_w32.cpp(446): warning C4101: 'i': unreferenced local variable
+f:\viewer\viewer\usb2serial_w32.cpp(653): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(663): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(679): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(693): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(699): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(725): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(731): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(744): warning C4551: function call missing argument list
+f:\viewer\viewer\usb2serial_w32.cpp(938): warning C4101: 'ix': unreferenced local variable
+  Viewer.vcxproj -> F:\Viewer\Debug\Viewer.exe
+  Viewer.vcxproj -> F:\Viewer\Debug\Viewer.pdb (Partial PDB)
