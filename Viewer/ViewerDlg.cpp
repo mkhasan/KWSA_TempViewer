@@ -69,7 +69,7 @@ END_MESSAGE_MAP()
 
 CViewerDlg::CViewerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_VIEWER_DIALOG, pParent)
-	, port(_T("COM4"))
+	, port(_T("COM7"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }

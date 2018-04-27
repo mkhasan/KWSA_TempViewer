@@ -14,7 +14,7 @@
 	// USB2SERIAL board and writes the data to it.                                                       //    
 	//----------------------------------------------------------------------------------------------------//
 	// Program runs on the PC side (Windows) and transmits a single character.                            //            
-	// Program uses CreateFile() function to open a connection serial port(COMxx).                        //
+	// Program uses CreateFile() function to open a connection serial port(COMxx).                        //96
 	// Program then sets the parameters of Serial Comm like Baudrate,Parity,Stop bits in the DCB struct.  //
 	// After setting the Time outs,the Program writes a character to COMxx using WriteFile().             //
     //----------------------------------------------------------------------------------------------------// 
@@ -238,7 +238,7 @@ DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam) {
 	CString str = ComPortName.Mid(strlen("COM"), strlen("COM") + 1);
 	int comNo = _ttoi(str);
 
-	SensorActivate(comNo, 115200, 256, 0);
+	SensorActivate(comNo, 9600, 256, 0);
 	while (quit == false) {
 		SensorGetValue(comNo);
 		Sleep(1000);
