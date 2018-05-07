@@ -139,7 +139,7 @@ BOOL CViewerDlg::OnInitDialog()
 	GetDlgItem(IDC_STATIC_TEMP)->SetFont(m_Font2);
 	GetDlgItem(IDC_STATIC_TEMP)->SetWindowTextW(_T(""));
 
-	GetDlgItem(IDC_ID)->SetWindowTextW(_T("0007"));
+	GetDlgItem(IDC_ID)->SetWindowTextW(_T("0005"));
 	GetDlgItem(IDC_COM)->SetWindowTextW(port);
 	
 	//OnBnClickedBtnShow();
