@@ -8,6 +8,22 @@
 #define STX 'X'
 #define ETX 'Y'
 
+
+#define KWSA_ASSERT ASSERT
+
+typedef unsigned char uint8_t;
+
+typedef unsigned int uint32_t;
+
+#define POLYNOM4 0x19
+#define POLYNOM8 0x1a9
+
+namespace MY_LIB {
+	uint8_t crcCalc(uint32_t const message, int const msgLen, uint32_t polynom);
+	int GetDegree(uint32_t polynom);
+};
+
+
 #define INVALID_HANDLE 1
 #define ERROR_WRONG_SETTING 2
 #define WRITE_ERROR 3
@@ -137,10 +153,11 @@
 
 typedef struct _sensordata
 {
-	volatile unsigned int id;
+	volatile unsigned int count;
+	volatile unsigned char sender;
 	volatile unsigned long value1;
 	volatile unsigned long value2;
-	volatile unsigned char status; //[4];   /* Status*/
+
 } sensordata;
 
 typedef struct _sensorRecord	//fuer je 1 GSV-4 mit CHAN_NO=4 Kanaelen
@@ -195,8 +212,10 @@ int CALLTYPE SensorGetMode(int ComNo);
 int CALLTYPE SensorGetTxMode(int ComNo);
 double CalcData(const unsigned long val);
 int CALLTYPE SensorGetValue(int ComNo);
-int CALLTYPE SensorRead(int ComNo, unsigned int * id, double* val1, double* val2);
+//int CALLTYPE SensorRead(int ComNo, unsigned int * id, double* val1, double* val2);
+int CALLTYPE SensorRead(int ComNo, unsigned int* count, unsigned int* addr, double* out1, double* out2);
 int CALLTYPE SensorActivate(int ComNo, long Bitrate, long BufSize, long flags);
 void Release();
+
 
 #endif

@@ -53,6 +53,8 @@
 #include <stdio.h>
 #include <string.h>
 
+
+
 extern CString ComPortName;
 extern int sensorId;
 extern bool quit;
@@ -61,177 +63,16 @@ extern unsigned long value1;
 extern unsigned long maxMissing;
 extern unsigned long maxFrame;
 
+extern uint8_t nodeList[20];
+extern int nNodes;
+
+static int ComputeMsg(uint8_t *buf);
 
 sensorRecord sensor;
 
 static void short_delay(DWORD dly);
 
-DWORD WINAPI USB2SERIAL_W32_backup(LPVOID lpParam)
-{
 
-
-	HANDLE hComm;                          // Handle to the Serial port
-	BOOL   Status;
-
-
-	hComm = CreateFile(ComPortName,                       // Name of the Port to be Opened
-		GENERIC_READ | GENERIC_WRITE,      // Read/Write Access
-		0,                                 // No Sharing, ports cant be shared
-		NULL,                              // No Security
-		OPEN_EXISTING,                     // Open existing port only
-		0,                                 // Non Overlapped I/O
-		NULL);                             // Null for Comm Devices
-
-	if (hComm == INVALID_HANDLE_VALUE) {
-		return INVALID_HANDLE;
-	}
-
-
-	/*------------------------------- Setting the Parameters for the SerialPort ------------------------------*/
-
-	DCB dcbSerialParams = { 0 };                        // Initializing DCB structure
-	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-
-	Status = GetCommState(hComm, &dcbSerialParams);     //retreives  the current settings
-
-	if (Status == FALSE)
-		printf("\n   Error! in GetCommState()");
-
-	dcbSerialParams.BaudRate = 9600;      // Setting BaudRate = 9600
-	dcbSerialParams.ByteSize = 8;             // Setting ByteSize = 8
-	dcbSerialParams.StopBits = ONESTOPBIT;    // Setting StopBits = 1
-	dcbSerialParams.Parity = NOPARITY;      // Setting Parity = None 
-	dcbSerialParams.fDtrControl = DTR_CONTROL_ENABLE;
-	dcbSerialParams.fRtsControl = DTR_CONTROL_ENABLE;
-
-	dcbSerialParams.fOutxCtsFlow = true;
-	Status = SetCommState(hComm, &dcbSerialParams);  //Configuring the port according to settings in DCB 
-
-	if (Status == FALSE)
-		return ERROR_WRONG_SETTING;
-
-	/*------------------------------------ Setting Timeouts --------------------------------------------------*/
-
-	COMMTIMEOUTS timeouts = { 0 };
-
-	timeouts.ReadIntervalTimeout = 50;
-	timeouts.ReadTotalTimeoutConstant = 50;
-	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.WriteTotalTimeoutConstant = 500;
-	timeouts.WriteTotalTimeoutMultiplier = 10;
-
-
-	if (SetCommTimeouts(hComm, &timeouts) == FALSE)
-		printf("\n   Error! in Setting Time Outs");
-	else
-		printf("\n\n   Setting Serial Port Timeouts Successfull");
-
-
-	/*----------------------------- Writing a Character to Serial Port----------------------------------------*/
-	char   lpBuffer[] = "GET VALUE 1234";		       // lpBuffer should be  char or byte array, otherwise write wil fail
-	DWORD  dNoOFBytestoWrite;              // No of bytes to write into the port
-	DWORD  dNoOfBytesWritten = 0;          // No of bytes written to the port
-
-	DWORD dwEventMask;                     // Event mask to trigger
-	char  TempChar;                        // Temperory Character
-	char  SerialBuffer[256];               // Buffer Containing Rxed Data
-	DWORD NoBytesRead;                     // Bytes read by ReadFile()
-
-	char str[256];
-
-	int i;
-
-	dNoOFBytestoWrite = sizeof(lpBuffer); // Calculating the no of bytes to write into the port
-	char buffer[256];
-	buffer[0] = 0x02;
-
-	for (int i = 0; i<dNoOFBytestoWrite - 1; i++)
-		buffer[i + 1] = lpBuffer[i];
-	buffer[dNoOFBytestoWrite] = 0x03;
-
-	dNoOFBytestoWrite = sizeof(lpBuffer); // Calculating the no of bytes to write into the port
-	
-	buffer[0] = 0x02;
-	for (int i = 0; i<dNoOFBytestoWrite - 1; i++)
-		buffer[i + 1] = lpBuffer[i];
-	buffer[dNoOFBytestoWrite] = 0x03;
-
-
-
-	while (quit == false) {
-		
-		buffer[dNoOFBytestoWrite+1] = 'x';
-		Status = WriteFile(hComm,               // Handle to the Serialport
-			buffer,            // Data to be written to the port 
-			dNoOFBytestoWrite + 1,   // No of bytes to write into the port
-			&dNoOfBytesWritten,  // No of bytes written to the port
-			NULL);
-		
-		
-		if (Status == TRUE) {
-			
-			printf("\n\n    %s - Written to %s size is %d ", buffer, ComPortName, dNoOfBytesWritten);
-		}
-		else
-			return WRITE_ERROR;
-
-		Status = SetCommMask(hComm, EV_RXCHAR); //Configure Windows to Monitor the serial device for Character Reception
-
-		if (Status == FALSE)
-			printf("\n\n    Error! in Setting CommMask");
-		else
-			printf("\n\n    Setting CommMask successfull");
-
-		//exit(1);
-		Status = WaitCommEvent(hComm, &dwEventMask, NULL); //Wait for the character to be received
-
-														   /*-------------------------- Program will Wait here till a Character is received ------------------------*/
-
-		if (Status == FALSE)
-		{
-			return WAIT_EVENT_ERROR;
-		}
-		else //If  WaitCommEvent()==True Read the RXed data using ReadFile();
-		{
-			
-
-			printf("\n\n    Characters Received");
-
-			i = 0;
-			do
-			{
-				Status = ReadFile(hComm, &TempChar, sizeof(TempChar), &NoBytesRead, NULL);
-				SerialBuffer[i] = TempChar;
-				i++;
-			} while (NoBytesRead > 0);
-
-
-
-			/*------------Printing the RXed String to Console----------------------*/
-
-			printf("\n\n    ");
-			int j = 0;
-			int k = 0;
-			for (j = 0; j < i - 1; j++, k++) {	// j < i-1 to remove the dupliated last character 
-				printf("%c", SerialBuffer[j]);
-				str[k] = SerialBuffer[j];
-			}
-			str[k] = 0;
-
-			if (k > 4)
-				str[4] = 0;
-			value = atoi(str);
-			Sleep(500);
-			
-		}
-
-	}
-	CloseHandle(hComm);//Closing the Serial Port
-	
-	//_getch();
-
-	return 0;
-}
 
 DWORD WINAPI USB2SERIAL_W32(LPVOID lpParam) {
 
@@ -354,7 +195,7 @@ static void move_data(sensorRecord *tmp)
 		unsigned long inx;
 		char suffix[2];
 
-
+		unsigned int temp = 0;
 		if (*p == DATA_KEY)
 		{
 			/* Sind genügend Daten da, um den Record vollständig zu verarbeiten ? */
@@ -367,56 +208,58 @@ static void move_data(sensorRecord *tmp)
 
 			/* Restanzahl berechnen */
 			j -= FRAME_SIZE;
-			p++;
-
-			p++;
-
-			memcpy((void *)&t.id, p, sizeof(unsigned int));
-			p += sizeof(unsigned int);
-			memset((void *)&t.value1, 0, sizeof(t.value1));
-
-			int k = sizeof(t.value1);
-			*((unsigned char *)&t.value1 + 3) = 0;
-			*((unsigned char *)&t.value1 + 2) = 0;
-			*((unsigned char *)&t.value1 + 1) = (p[0]);
-			*((unsigned char *)&t.value1 + 0) = (p[1]);
 
 			p += 2;
 
-			*((unsigned char *)&t.value2 + 3) = 0;
-			*((unsigned char *)&t.value2 + 2) = 0;
-			*((unsigned char *)&t.value2 + 1) = (p[0]);
-			*((unsigned char *)&t.value2 + 0) = (p[1]);
 
-			/* geschützten Daten-Lese-Bereich betreten */
-			DWORD retv = WaitForSingleObject(tmp->io_mutex, MUTEX_MAX_WAITTIME);	//INFINITE
-			if (retv == WAIT_OBJECT_0) //!= WAIT_FAILED) 
-			{
-				/* überspringen, wenn Buffer clear gefordert */
-				if (!tmp->clear)
+			t.count = *p | (*(p + 1) << 8) | (*(p + 2) << 16);
+
+			p += 3;
+
+			memcpy(&temp, p, 4);
+
+			t.sender = (temp & 0xFF000000) >> 24;
+			t.value1 = (temp & 0xFFF000) >> 12;
+			t.value2 = temp & 0xFFF;
+
+			p += 4;
+
+
+			unsigned char dataCrc = MY_LIB::crcCalc(temp, 32, 0x1A9);
+			
+			if (dataCrc == *p) {
+				DWORD retv = WaitForSingleObject(tmp->io_mutex, MUTEX_MAX_WAITTIME);	//INFINITE
+				if (retv == WAIT_OBJECT_0) //!= WAIT_FAILED) 
 				{
-					/* Wert und Status in Datenpuffer legen und */
-					/* Zeiger etc. anpassen */
-					
-					if (tmp->out_count < tmp->out_size)
-						tmp->out_count++;
-					else				//Buffer voll: alte Werte ueberschreiben
-						tmp->out_get = (tmp->out_get + 1) % tmp->out_size;
+					/* überspringen, wenn Buffer clear gefordert */
+					if (!tmp->clear)
+					{
+						/* Wert und Status in Datenpuffer legen und */
+						/* Zeiger etc. anpassen */
 
-					*(tmp->out_buffer+tmp->out_put)= t;
-					//tmp->out_buffer[tmp->out_put].value1 = t.value1;
-					tmp->out_put = (tmp->out_put + 1) % tmp->out_size;
-					maxFrame++;
+						if (tmp->out_count < tmp->out_size)
+							tmp->out_count++;
+						else				//Buffer voll: alte Werte ueberschreiben
+							tmp->out_get = (tmp->out_get + 1) % tmp->out_size;
+
+						*(tmp->out_buffer + tmp->out_put) = t;
+						//tmp->out_buffer[tmp->out_put].value1 = t.value1;
+						tmp->out_put = (tmp->out_put + 1) % tmp->out_size;
+						maxFrame++;
+					}
+					/* geschützten Daten-Lese-Bereich verlassen */
+					ReleaseMutex(tmp->io_mutex);
+
+					/* ganz abbrechen, wenn Buffer clear gefordert */
+					if (tmp->clear)
+						return;
 				}
-				/* geschützten Daten-Lese-Bereich verlassen */
-				ReleaseMutex(tmp->io_mutex);
-
-				/* ganz abbrechen, wenn Buffer clear gefordert */
-				if (tmp->clear)
-					return;
+				else
+					tmp->error = ERR_MUTEXFAILED;
 			}
 			else
-				tmp->error = ERR_MUTEXFAILED;
+				AfxMessageBox(_T("CRC Check error \n"));
+				//KWSA_ERROR("CRC Check error \n");
 			//else printf("mutex gescheitert. Code: %d",tmp->error);
 		}
 		/* sonstige Zeichen */
@@ -933,7 +776,8 @@ int CALLTYPE SensorGetTxMode(int ComNo) {
 }
 
 
-int CALLTYPE SensorRead(int ComNo, unsigned int *id, double* out1, double* out2)
+
+int CALLTYPE SensorRead(int ComNo, unsigned int* count, unsigned int* addr, double* out1, double* out2)
 {
 	int result = SENSOR_TRUE, ix; //,err;
 
@@ -950,7 +794,8 @@ int CALLTYPE SensorRead(int ComNo, unsigned int *id, double* out1, double* out2)
 			result = SENSOR_OK;			//nein: result=0
 		if (result && !tmp->error)
 		{
-			*id = tmp->out_buffer[tmp->out_get].id;
+			*count = tmp->out_buffer[tmp->out_get].count;
+			*addr = (unsigned int)tmp->out_buffer[tmp->out_get].sender;
 			*out1 = CalcData(tmp->out_buffer[tmp->out_get].value1);
 			*out2 = CalcData(tmp->out_buffer[tmp->out_get].value2);
 			tmp->out_get = (tmp->out_get + 1) % tmp->out_size;
@@ -972,21 +817,24 @@ int CALLTYPE SensorRead(int ComNo, unsigned int *id, double* out1, double* out2)
 
 int CALLTYPE SensorGetValue(int ComNo)
 {
-	char txbuf[256];
+	uint8_t txbuf[256];
 	DWORD Byteswritten;
 	int res = SENSOR_OK;
 
 	CHECK_COMNO;
 	memset(txbuf, 0, sizeof(txbuf));
 	
-	sprintf(txbuf, "%cGET VALUE %03d%c", STX, sensorId, ETX);
+	//sprintf(txbuf, "%cGET VALUE %03d%c", STX, sensorId, ETX);
 
 
 
 	//WRITE_BYTES_CHK_SUCC(16);
 
 	
-	int len = strlen(txbuf);
+	//int len = strlen(txbuf);
+
+	int len = ComputeMsg(txbuf);//strlen((char *)txbuf);
+
 	if (!WriteFile(sensor.hcom, txbuf, (len), &Byteswritten, NULL)) 
 	{	
 		sensor.LastError = GetLastError() | OWN_ERR_MASK; 
@@ -1005,3 +853,101 @@ double CalcData(const unsigned long val) {
 	return ret;
 }
 
+int ComputeMsg(uint8_t *buf) {
+	//sprintf((char*)txbuf, "%cGET VALUE %03d%c", STX, addr, ETX);
+
+	static int turn = 0;
+
+	uint8_t addr = nodeList[turn++];
+
+	turn %= nNodes;
+
+	uint32_t msg = addr;
+	uint32_t polynom = POLYNOM4;
+	uint8_t crc = MY_LIB::crcCalc(msg, 8, polynom);
+
+	KWSA_ASSERT(crc < 0x10);
+
+	//sprintf((char*)txbuf, "%cGET VALUE %c%c%c%c", STX, addr, ETX);
+
+	uint8_t * p = buf;
+	*p++ = STX;
+	char str[256] = "GET VALUE ";
+	for (int i = 0; i<strlen(str); i++)
+		*p++ = str[i];
+
+	*p++ = addr;
+	*p++ = crc;
+	*p++ = '0';
+	*p++ = ETX;
+
+	int len = p - buf;
+	KWSA_ASSERT(len == 15);
+
+	//KWSA_DEBUG("Requesting data for addr %d \n", addr);
+	return len;
+
+
+}
+
+uint8_t MY_LIB::crcCalc(uint32_t const message, int const msgLen, uint32_t polynom)
+{
+	uint32_t  remainder;
+
+	int deg = GetDegree(polynom);
+	assert(deg >= 0 && deg <= msgLen);
+	polynom <<= (msgLen - deg - 1);	//0b110100;
+
+	const uint32_t mask = 1 << (msgLen - 1);
+	//const int maxIt = msgLen;
+
+	//printf("poly is %x \n", polynom);
+	/*
+	* Initially, the dividend is the remainder.
+	*
+	*
+	*/
+	remainder = message;
+
+	/*
+	* For each bit position in the message....
+	*/
+	for (uint8_t bit = msgLen; bit > 0; --bit)
+	{
+		/*
+		* If the uppermost bit is a 1...
+		*/
+		if (remainder & mask)
+		{
+			/*
+			* XOR the previous remainder with the divisor.
+			*/
+			remainder ^= polynom;
+		}
+
+
+		/*
+		* Shift the next bit of the message into the remainder.
+		*/
+		remainder = (remainder << 1);
+		//printf("it %d: remainder is %x \n", msgLen-bit, remainder);
+	}
+
+	/*
+	* Return only the relevant bits of the remainder as CRC.
+	*/
+
+	const uint32_t remMask = ((1 << deg) - 1);
+	return uint8_t((remainder >> (msgLen - deg)) & remMask);
+
+}   /* crcNaive() */
+
+int MY_LIB::GetDegree(uint32_t polynom) {
+	int degree = -1;
+	while (polynom) {
+		polynom >>= 1;
+		degree++;
+	}
+
+	return degree;
+}

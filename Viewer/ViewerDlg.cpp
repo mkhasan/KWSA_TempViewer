@@ -22,12 +22,18 @@
 CString ComPortName;
 int sensorId = -1;
 
+uint8_t nodeList[20];
+int nNodes=1;
+
+
 bool quit = false;
 int value = -1;
 unsigned long value1 = 0;
 unsigned long maxMissing=0;
 unsigned long maxFrame = 0;
 
+extern uint8_t nodeList[20];
+extern int nNodes;
 
 // CAboutDlg dialog used for App About
 
@@ -69,7 +75,7 @@ END_MESSAGE_MAP()
 
 CViewerDlg::CViewerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_VIEWER_DIALOG, pParent)
-	, port(_T("COM7"))
+	, port(_T("COM9"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -139,7 +145,7 @@ BOOL CViewerDlg::OnInitDialog()
 	GetDlgItem(IDC_STATIC_TEMP)->SetFont(m_Font2);
 	GetDlgItem(IDC_STATIC_TEMP)->SetWindowTextW(_T(""));
 
-	GetDlgItem(IDC_ID)->SetWindowTextW(_T("0005"));
+	GetDlgItem(IDC_ID)->SetWindowTextW(_T("15"));
 	GetDlgItem(IDC_COM)->SetWindowTextW(port);
 	
 	//OnBnClickedBtnShow();
@@ -205,6 +211,8 @@ void CViewerDlg::OnBnClickedBtnShow()
 	GetDlgItem(IDC_ID)->GetWindowTextW(idStr);
 	sensorId = _ttoi(idStr);
 
+	nodeList[0] = (uint8_t)(sensorId & 0xFF);
+
 	if (!(sensorId > 0 && sensorId < 0xFF)) {
 		AfxMessageBox(_T("Error: Invalid sensor id"));
 		exit(0);
@@ -258,23 +266,23 @@ void CViewerDlg::OnTimer(UINT_PTR nIDEvent)
 	static int ret = 0;
 	int dir = 1;
 	int i=0;
-	unsigned int id;
+	unsigned int count, sender;
 	if (nIDEvent == 1) {
 		// handle timer event
 
 		if (sensor.ownPtr != NULL) {
 		
 			dir = 1;
-			if (SensorRead(sensor.ComNr, &id, &val1, &val2) == SENSOR_TRUE) {
+			if (SensorRead(sensor.ComNr, &count, &sender, &val1, &val2) == SENSOR_TRUE) {
 				str.Format(_T("%.2f   %.2f"), val1, val2);
 				GetDlgItem(IDC_MSG)->SetWindowTextW(str);
 
 
-				str.Format(_T("id is is %d"), id);
+				str.Format(_T("id is is %d"), count);
 				GetDlgItem(IDC_TEMP)->SetWindowTextW(str);
 
-				str.Format(_T("missing is %d"), maxMissing);
-				GetDlgItem(IDC_TEMP2)->SetWindowTextW(str);
+				str.Format(_T("Sender is %d"), sender);
+				GetDlgItem(IDC_STATIC_SENDER)->SetWindowTextW(str);
 
 				//if (value1 > 0)
 					//value1 = 100;
